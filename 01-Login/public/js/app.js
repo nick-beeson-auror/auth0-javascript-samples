@@ -10,7 +10,7 @@ const login = async (targetUrl) => {
 
     const options = {
       authorizationParams: {
-        redirect_uri: window.location.origin
+        redirect_uri:"http://localhost:3000/"
       }
     };
 
@@ -54,7 +54,11 @@ const configureClient = async () => {
 
   auth0Client = await auth0.createAuth0Client({
     domain: config.domain,
-    clientId: config.clientId
+    clientId: config.clientId,
+    authorizationParams: {
+      redirect_uri:"http://localhost:3000/",
+      connection: 'secure-auth-test', //This is required for the custom connection. If it's missing, it will take the user to the Auror U/P login page by default. 
+    }
   });
 };
 
@@ -112,15 +116,17 @@ window.onload = async () => {
   const shouldParseResult = query.includes("code=") && query.includes("state=");
 
   if (shouldParseResult) {
-    console.log("> Parsing redirect");
+    console.log("> Parsing redirect " + query);
     try {
       const result = await auth0Client.handleRedirectCallback();
-
+      console.log(result);
       if (result.appState && result.appState.targetUrl) {
         showContentFromUrl(result.appState.targetUrl);
       }
 
       console.log("Logged in!");
+      const token = await auth0Client.getTokenSilently();
+      console.log(token);
     } catch (err) {
       console.log("Error parsing redirect:", err);
     }
